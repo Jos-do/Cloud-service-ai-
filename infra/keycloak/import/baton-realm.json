@@ -1,0 +1,200 @@
+{
+  "realm": "baton",
+  "displayName": "Baton",
+  "displayNameHtml": "<strong>Baton</strong>",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "rememberMe": true,
+  "resetPasswordAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "roles": {
+    "realm": [
+      {
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}",
+        "composite": false
+      },
+      {
+        "name": "offline_access",
+        "description": "${role_offline-access}",
+        "composite": false
+      },
+      {
+        "name": "agent",
+        "description": "Works the support desk: accepts handoffs, replies, resolves."
+      },
+      {
+        "name": "admin",
+        "description": "Manages agents and handoff policy; sees every conversation and insights."
+      },
+      {
+        "name": "default-roles-baton",
+        "description": "Roles every new account gets (staff accounts are created by an admin).",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "offline_access",
+            "uma_authorization"
+          ],
+          "client": {
+            "account": [
+              "view-profile",
+              "manage-account"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-baton",
+    "description": "Roles every new user gets",
+    "composite": true,
+    "composites": {
+      "realm": [
+        "offline_access",
+        "uma_authorization"
+      ]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "baton-web",
+      "name": "Baton web app",
+      "description": "The staff web app (agent desk, admin). Public client: authorization code + PKCE. Customers never sign in — they use the chat widget.",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "${BATON_WEB_URL}",
+      "baseUrl": "/",
+      "redirectUris": [
+        "${BATON_WEB_URL}/*"
+      ],
+      "webOrigins": [
+        "${BATON_WEB_URL}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${BATON_WEB_URL}/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "baton-api audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "baton-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "baton-api",
+      "name": "Baton API",
+      "description": "Resource server: never signs anyone in, only names the audience of access tokens.",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "clientId": "baton-api-admin",
+      "name": "Baton API (user administration)",
+      "description": "Service account the API uses for one thing: deleting a person's account when an admin erases their data.",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${BATON_API_ADMIN_SECRET}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "alex.rivera",
+      "email": "alex.rivera@baton.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Alex",
+      "lastName": "Rivera",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${BATON_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-baton",
+        "agent"
+      ]
+    },
+    {
+      "username": "priya.shah",
+      "email": "priya.shah@baton.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Priya",
+      "lastName": "Shah",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${BATON_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-baton",
+        "agent"
+      ]
+    },
+    {
+      "username": "jade.kim",
+      "email": "jade.kim@baton.example",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Jade",
+      "lastName": "Kim",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${BATON_DEMO_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-baton",
+        "admin",
+        "agent"
+      ]
+    },
+    {
+      "username": "service-account-baton-api-admin",
+      "enabled": true,
+      "serviceAccountClientId": "baton-api-admin",
+      "clientRoles": {
+        "realm-management": [
+          "view-users",
+          "manage-users"
+        ]
+      }
+    }
+  ]
+}
